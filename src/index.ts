@@ -36,6 +36,9 @@ export { compareCallGraphs } from "./output/compare";
 export { TokenListener } from "./analysis/listeners";
 export { exportCallGraphHtml, exportDataFlowGraphHtml } from "./output/visualizer";
 
+// TypeScript type inferring
+export { TypeScriptTypeInferrer, LibraryUsage, LibraryUsageJSON } from "./typescript/typeinferrer";
+
 // File utilities
 export {
     expand,
