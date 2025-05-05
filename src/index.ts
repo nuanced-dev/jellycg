@@ -14,8 +14,8 @@ export {
 } from "./options";
 
 // Essential types
-export { ConstraintVar } from "./analysis/constraintvars";
-export { Token, FunctionToken, ObjectToken } from "./analysis/tokens";
+export { ConstraintVar, ObjectPropertyVar } from "./analysis/constraintvars";
+export { AllocationSiteToken, Token, FunctionToken, NativeObjectToken, ObjectToken } from "./analysis/tokens";
 export { AccessPath } from "./analysis/accesspaths";
 export { FunctionInfo, ModuleInfo } from "./analysis/infos";
 export {
