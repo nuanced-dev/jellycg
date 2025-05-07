@@ -3,6 +3,7 @@ export { analyzeFiles } from "./analysis/analyzer";
 export { default as Solver } from "./analysis/solver";
 export { FragmentState } from "./analysis/fragmentstate";
 export { GlobalState } from "./analysis/globalstate";
+export { getAPIUsage } from "./patternmatching/apiusage";
 
 // Options management
 export {
@@ -14,10 +15,10 @@ export {
 } from "./options";
 
 // Essential types
-export { ConstraintVar, ObjectPropertyVar } from "./analysis/constraintvars";
-export { AllocationSiteToken, Token, FunctionToken, NativeObjectToken, ObjectToken } from "./analysis/tokens";
-export { AccessPath } from "./analysis/accesspaths";
-export { FunctionInfo, ModuleInfo } from "./analysis/infos";
+export { ConstraintVar, ObjectPropertyVar, isObjectPropertyVarObj } from "./analysis/constraintvars";
+export { AccessPathToken, PackageObjectToken, AllocationSiteToken, Token, FunctionToken, NativeObjectToken, ObjectToken } from "./analysis/tokens";
+export { PropertyAccessPath, AccessPath } from "./analysis/accesspaths";
+export { FunctionInfo, ModuleInfo, PackageInfo } from "./analysis/infos";
 export {
     FilePath,
     Location,
