@@ -133,7 +133,7 @@ function getReverseGraph<N1, N2>(g: Map<N1, Set<N2>>): Map<N2, Set<N1>> {
  * Finds the functions and modules (as top-level functions) that may reach the given function.
  * The functions and modules are the keys of the resulting map; the values are the successors toward the given function.
  */
-function findReachingFunctions(f: FragmentState, fun: FunctionInfo | ModuleInfo): Map<FunctionInfo | ModuleInfo, Set<FunctionInfo | ModuleInfo>> {
+export function findReachingFunctions(f: FragmentState, fun: FunctionInfo | ModuleInfo): Map<FunctionInfo | ModuleInfo, Set<FunctionInfo | ModuleInfo>> {
     const callers = getReverseGraph(f.functionToFunction);
     const requires = getReverseGraph(f.requireGraph);
     const r = new Map<FunctionInfo | ModuleInfo, Set<FunctionInfo | ModuleInfo>>();

@@ -4,6 +4,7 @@ export { default as Solver } from "./analysis/solver";
 export { FragmentState } from "./analysis/fragmentstate";
 export { GlobalState } from "./analysis/globalstate";
 export { getAPIUsage } from "./patternmatching/apiusage";
+export { findReachingFunctions } from "./patternmatching/apiexported";
 
 // Options management
 export {
