@@ -29,7 +29,8 @@ export {
     locationToStringWithFileAndEnd,
     locationContains,
     locationIn,
-    longestCommonPrefix
+    longestCommonPrefix,
+    nodeToString
 } from "./misc/util";
 
 // Result processing
