@@ -30,8 +30,8 @@ fi
 echo "Checking gh repo permissions..."
 scopes=" $(gh api -i user | grep X-Oauth-Scopes | cut -c17-),"
 for scope in repo workflow; do
-    if ! echo "$scopes" | grep -q " $scope,"; then
-        echo "Error: gh is missing 'repo' permission"
+    if ! echo "$scopes" | grep -q "$scope"; then
+        echo "Error: gh is missing '$scope' permission"
         exit 1
     fi
 done
