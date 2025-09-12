@@ -6,6 +6,8 @@
 
 set -eu
 
+. "$(dirname "$0")/release-shared.bash"
+
 echo "Starting release process..."
 
 # Parse optional argument
@@ -18,38 +20,18 @@ elif [ $# -gt 1 ]; then
     exit 1
 fi
 
-# Check for required dependencies
-echo "Checking required dependencies..."
-for cmd in gh git node npm; do
-    if ! command -v "$cmd" &> /dev/null; then
-        echo "Error: $cmd is not installed or not in PATH"
-        exit 1
-    fi
-done
+check_required_commands
 
-# Read package name and version from package.json
-echo "Reading package metadata..."
-package_name=$(node -p "require('./package.json').name")
-version=$(node -p "require('./package.json').version")
-echo "Package: $package_name@$version"
+read_package_metadata
+
+check_changelog_entry
 
 # If tag_ref is provided, verify it matches the package.json version
 if [ -n "$tag_ref" ]; then
-    echo "Checking that tag matches package version..."
-    expected_tag="refs/tags/v$version"
+    echo "Checking that tag $tag_ref matches package version $package_version..."
+    expected_tag="refs/tags/v$package_version"
     if [ "$tag_ref" != "$expected_tag" ]; then
-        echo "Error: tag '$tag_ref' does not match expected tag '$expected_tag' for version $version"
-        exit 1
-    fi
-fi
-
-# Ensure there's a line `[version] - current_date` in CHANGELOG.md
-if [ -f "CHANGELOG.md" ]; then
-    echo "Checking changelog entry..."
-    current_date=$(date +%Y-%m-%d)
-    changelog_line="## [$version] - $current_date"
-    if ! grep -q -Fx "$changelog_line" CHANGELOG.md; then
-        echo "Error: missing CHANGELOG.md entry: $changelog_line"
+        echo "Error: tag '$tag_ref' does not match expected tag '$expected_tag' for version $package_version"
         exit 1
     fi
 fi
@@ -70,25 +52,21 @@ original_file=$(npm pack --pack-destination="$temp_dir" | tail -n 1)
 original_path="$temp_dir/$original_file"
 echo "Package archive created at: $original_path"
 
-# Verify that the git working directory is clean after build
-echo "Checking git working directory is clean..."
-if ! status="$(git status --porcelain)" || [ -n "$status" ]; then
-    echo "Error: Git working directory is dirty. Please commit or stash your changes."
-    exit 1
-fi
+# check after running `npm pack` to ensure the build did not touch any checked-in files
+check_clean_working_directory
 
-# Rename the tgz to packageName-version.tar.gz
-new_file="${package_name##*/}-${version}.tar.gz"
+# Rename the tgz to package_name-package_version.tar.gz
+new_file="${package_name##*/}-${package_version}.tar.gz"
 new_path="$temp_dir/$new_file"
 mv "$original_path" "$new_path"
 echo "Package archive renamed to: $new_path"
 
 # Create a GitHub release using gh
 echo "Creating GitHub release..."
-release_tag="v$version"
+release_tag="v$package_version"
 gh release create "$release_tag" "$new_path" \
-    --title "Release $version" \
+    --title "Release $package_version" \
     --generate-notes \
     --latest
 echo "Package archive uploaded: $new_file"
-echo "Release $version created successfully!"
+echo "Release $package_version created successfully!"
