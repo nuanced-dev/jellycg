@@ -1,8 +1,22 @@
 #!/usr/bin/env bash
 
+## This script is run from a workflow whenever a version tag of the shape `v*` is pushed.
+## DO NOT RUN THIS SCRIPT MANUALLY! The version tag pushed by `gh release create` would
+## trigger a workflow run that will also invoke this script.
+
 set -eu
 
 echo "Starting release process..."
+
+# Parse optional argument
+tag_ref=
+if [ $# -eq 1 ]; then
+    tag_ref="$1"
+elif [ $# -gt 1 ]; then
+    echo "Error: unexpected arguments"
+    echo "Usage: $0 [tag-ref]"
+    exit 1
+fi
 
 # Check for required dependencies
 echo "Checking required dependencies..."
@@ -19,22 +33,26 @@ package_name=$(node -p "require('./package.json').name")
 version=$(node -p "require('./package.json').version")
 echo "Package: $package_name@$version"
 
-# Verify that the git working directory is not dirty
-echo "Checking git working directory is clean..."
-if ! status="$(git status --porcelain)" || [ -n "$status" ]; then
-    echo "Error: Git working directory is dirty. Please commit or stash your changes."
-    exit 1
-fi
-
-# Check permissions
-echo "Checking gh repo permissions..."
-scopes=" $(gh api -i user | grep X-Oauth-Scopes | cut -c17-),"
-for scope in repo workflow; do
-    if ! echo "$scopes" | grep -q " $scope,"; then
-        echo "Error: gh is missing 'repo' permission"
+# If tag_ref is provided, verify it matches the package.json version
+if [ -n "$tag_ref" ]; then
+    echo "Checking that tag matches package version..."
+    expected_tag="refs/tags/v$version"
+    if [ "$tag_ref" != "$expected_tag" ]; then
+        echo "Error: tag '$tag_ref' does not match expected tag '$expected_tag' for version $version"
         exit 1
     fi
-done
+fi
+
+# Ensure there's a line `[version] - current_date` in CHANGELOG.md
+if [ -f "CHANGELOG.md" ]; then
+    echo "Checking changelog entry..."
+    current_date=$(date +%Y-%m-%d)
+    changelog_line="## [$version] - $current_date"
+    if ! grep -q -Fx "$changelog_line" CHANGELOG.md; then
+        echo "Error: missing CHANGELOG.md entry: $changelog_line"
+        exit 1
+    fi
+fi
 
 # Install locked npm dependencies
 echo "Installing locked npm dependencies..."
@@ -51,6 +69,13 @@ trap cleanup EXIT
 original_file=$(npm pack --pack-destination="$temp_dir" | tail -n 1)
 original_path="$temp_dir/$original_file"
 echo "Package archive created at: $original_path"
+
+# Verify that the git working directory is clean after build
+echo "Checking git working directory is clean..."
+if ! status="$(git status --porcelain)" || [ -n "$status" ]; then
+    echo "Error: Git working directory is dirty. Please commit or stash your changes."
+    exit 1
+fi
 
 # Rename the tgz to packageName-version.tar.gz
 new_file="${package_name##*/}-${version}.tar.gz"
