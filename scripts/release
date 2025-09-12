@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -eu
+
+. "$(dirname "$0")/release-shared.bash"
+
+echo "Starting release process..."
+
+check_required_commands
+
+check_clean_working_directory
+
+read_package_metadata
+
+check_changelog_entry
+
+# Install locked npm dependencies
+echo "Installing locked npm dependencies..."
+npm ci
+
+echo "Building package..."
+npm run build
+
+# check after running `npm build` to ensure the build did not touch any checked-in files
+check_clean_working_directory
+
+release_tag="v$package_version"
+echo "Creating tag $release_tag..."
+git tag "$release_tag"
+
+echo "Pushing tag $release_tag to GitHub..."
+git push origin "$release_tag"
+
+echo "To finalize the release, verify the archive and publish via Anystack https://app.anystack.sh/products/9f0382b0-a71b-4a8f-9e03-f076d567b8ac/releases"
+
