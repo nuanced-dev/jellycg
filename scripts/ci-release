@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+## This script is run from a workflow whenever a version tag of the shape `v*` is pushed.
+## DO NOT RUN THIS SCRIPT MANUALLY! The version tag pushed by `gh release create` would
+## trigger a workflow run that will also invoke this script.
+
+set -eu
+
+. "$(dirname "$0")/release-shared.bash"
+
+echo "Starting release process..."
+
+# Parse optional argument
+tag_ref=
+if [ $# -eq 1 ]; then
+    tag_ref="$1"
+elif [ $# -gt 1 ]; then
+    echo "Error: unexpected arguments"
+    echo "Usage: $0 [tag-ref]"
+    exit 1
+fi
+
+check_required_commands
+
+read_package_metadata
+
+check_changelog_entry
+
+# If tag_ref is provided, verify it matches the package.json version
+if [ -n "$tag_ref" ]; then
+    echo "Checking that tag $tag_ref matches package version $package_version..."
+    expected_tag="refs/tags/v$package_version"
+    if [ "$tag_ref" != "$expected_tag" ]; then
+        echo "Error: tag '$tag_ref' does not match expected tag '$expected_tag' for version $package_version"
+        exit 1
+    fi
+fi
+
+# Install locked npm dependencies
+echo "Installing locked npm dependencies..."
+npm ci
+
+# Run npm pack and capture the resulting tgz filename
+echo "Creating package archive..."
+temp_dir=$(mktemp -d)
+function cleanup {
+    echo Removing "$temp_dir"
+    rm -rf "$temp_dir"
+}
+trap cleanup EXIT
+original_file=$(npm pack --pack-destination="$temp_dir" | tail -n 1)
+original_path="$temp_dir/$original_file"
+echo "Package archive created at: $original_path"
+
+# check after running `npm pack` to ensure the build did not touch any checked-in files
+check_clean_working_directory
+
+# Rename the tgz to package_name-package_version.tar.gz
+new_file="${package_name##*/}-${package_version}.tar.gz"
+new_path="$temp_dir/$new_file"
+mv "$original_path" "$new_path"
+echo "Package archive renamed to: $new_path"
+
+# Create a GitHub release using gh
+echo "Creating GitHub release..."
+release_tag="v$package_version"
+gh release create "$release_tag" "$new_path" \
+    --title "Release $package_version" \
+    --generate-notes \
+    --latest
+echo "Package archive uploaded: $new_file"
+echo "Release $package_version created successfully!"
