@@ -2,14 +2,14 @@
 
 ## Release Process
 
-1. Ensure the version number in `package.json` has been updated.
-
-2. Execute the release script:
+1. Create and push a version tag. Make sure it matches the version in `package.json`. For example, for version 0.1.2:
 
    ```sh
-   scripts/release
+   git tag v0.1.2
+   git push origin v0.1.2
    ```
 
-   This creates a GitHub release with an archive that is named correctly for Anystack.
+2. The release workflow creates a GitHub release for the tag.
 
-3. Publish the release in Anystack.
+3. Publish the release via Anystack UI
+
