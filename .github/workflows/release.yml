@@ -20,4 +20,4 @@ jobs:
       - name: Run ci-release script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: scripts/ci-release "${{ github.ref }}"
+        run: script/ci-release "${{ github.ref }}"
