@@ -31,5 +31,4 @@ git tag "$release_tag"
 echo "Pushing tag $release_tag to GitHub..."
 git push origin "$release_tag"
 
-echo "To finalize the release, verify the archive and publish via Anystack https://app.anystack.sh/products/9f0382b0-a71b-4a8f-9e03-f076d567b8ac/releases"
-
+echo "All done! CI will publish the new release to https://www.npmjs.com/package/$package_name/v/$package_version."

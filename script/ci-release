@@ -48,25 +48,23 @@ function cleanup {
     rm -rf "$temp_dir"
 }
 trap cleanup EXIT
-original_file=$(npm pack --pack-destination="$temp_dir" | tail -n 1)
-original_path="$temp_dir/$original_file"
-echo "Package archive created at: $original_path"
+archive_file=$(npm pack --pack-destination="$temp_dir" | tail -n 1)
+archive_path="$temp_dir/$archive_file"
+echo "Package archive created at: $archive_path"
 
 # check after running `npm pack` to ensure the build did not touch any checked-in files
 check_clean_working_directory
 
-# Rename the tgz to package_name-package_version.tar.gz
-new_file="${package_name##*/}-${package_version}.tar.gz"
-new_path="$temp_dir/$new_file"
-mv "$original_path" "$new_path"
-echo "Package archive renamed to: $new_path"
+# Publish to NPM
+echo "Publishing package..."
+npm publish "$archive_path"
 
 # Create a GitHub release using gh
 echo "Creating GitHub release..."
 release_tag="v$package_version"
-gh release create "$release_tag" "$new_path" \
+gh release create "$release_tag" "$archive_path" \
     --title "Release $package_version" \
     --generate-notes \
     --latest
-echo "Package archive uploaded: $new_file"
+echo "Package archive uploaded: $archive_file"
 echo "Release $package_version created successfully!"
