@@ -1,6 +1,6 @@
 /.idea/
 /dist/
 /lib/
-/node_modules/
 /tmp/
+node_modules/
 nuanced-dev-*.tgz
