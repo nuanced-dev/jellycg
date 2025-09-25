@@ -17,7 +17,9 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
       - name: Run ci-release script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NUANCED_DEV_NPM_TOKEN }}
         run: script/ci-release "${{ github.ref }}"
