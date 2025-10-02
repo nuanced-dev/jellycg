@@ -239,7 +239,7 @@ export class GlobalState {
     registerFunctionInfo(file: FilePath, path: NodePath<Function>, name: string | undefined) {
         const fun = path.node;
         const m = this.moduleInfosByPath.get(file)!;
-        const f = new FunctionInfo(name, fun.loc!, m, isDummyConstructor(fun));
+        const f = new FunctionInfo(name, fun.loc!, "id" in fun ? fun.id?.loc! : undefined, m, isDummyConstructor(fun));
         this.functionInfos.set(fun, f);
         const parent = getEnclosingFunction(path);
         (parent ? this.functionInfos.get(parent)!.functions : m.functions).add(f);
