@@ -3,4 +3,5 @@
 /lib/
 /tmp/
 node_modules/
+!/.nuanced/
 nuanced-dev-*.tgz
