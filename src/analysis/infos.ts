@@ -108,6 +108,7 @@ export class FunctionInfo {
     constructor(
         readonly name: string | undefined, // function name
         readonly loc: Location, // function source location
+        readonly idLoc: Location | undefined, // function identifier location
         readonly moduleInfo: ModuleInfo, // module containing this function
         readonly isDummyConstructor: boolean // true if dummy constructor
     ) {}
